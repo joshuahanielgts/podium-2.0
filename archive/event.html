@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Podium — The deck wall</title>
+<meta name="description" content="Every deck in the event, side by side. Read them, then vote for the one you would back." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-label%3D%22Podium%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%23F5F1EA%22%2F%3E%20%3Crect%20x%3D%229%22%20y%3D%2228%22%20width%3D%2215.5%22%20height%3D%2227%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3Cpath%20d%3D%22M27.5%2018.8c0-1.2.8-2.2%202-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z%22%20fill%3D%22%23C9541F%22%2F%3E%20%3Crect%20x%3D%2245.5%22%20y%3D%2233%22%20width%3D%2214%22%20height%3D%2222%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3C%2Fsvg%3E" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=20261003121731" />
+</head>
+<body class="wall-page">
+
+<header class="header">
+  <div class="wrap">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"> <rect width="64" height="64" rx="16" fill="#F5F1EA"/> <rect x="9" y="28" width="15.5" height="27" rx="3" fill="#1B1A16"/> <path d="M27.5 18.8c0-1.2.8-2.2 2-2.5l10.5-2.2c1.6-.3 3.1.9 3.1 2.5V52c0 1.7-1.3 3-3 3h-9.6c-1.7 0-3-1.3-3-3V18.8Z" fill="#C9541F"/> <rect x="45.5" y="33" width="14" height="22" rx="3" fill="#1B1A16"/> </svg>
+        Podium
+      </a>
+
+      <span class="event-chip" data-event-chip hidden></span>
+
+      <nav class="app-nav" data-app-nav aria-label="Your event">
+        <a href="event.html" aria-current="page">Wall</a>
+        <a href="results.html">Results</a>
+        <a href="dashboard.html" data-organiser-only hidden>Dashboard</a>
+        <a href="create-event.html" data-organiser-only hidden>Settings</a>
+      </nav>
+
+      <div class="header-actions">
+        <span class="who" data-who hidden><span class="who-dot" aria-hidden="true"></span><span data-who-name>You</span></span>
+        <a class="btn btn-primary btn-sm" href="onboarding.html" data-signin-btn>Sign in</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- EVENT HEAD -->
+  <section class="wall-head">
+    <div class="wrap">
+      <div class="event-banner sw-1" data-event-banner></div>
+      <div class="event-bar">
+        <div>
+          <h1 class="h2" data-event-name>The deck wall</h1>
+          <p class="micro" data-event-meta>No event on this device yet</p>
+        </div>
+        <div class="event-state">
+          <button class="btn btn-ghost btn-sm" data-open-poster>See the poster</button>
+          <span class="state-pill" data-state-pill>Uploads open</span>
+          <span class="micro" data-vote-left>One vote per group</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTROLS -->
+  <section class="wall-controls">
+    <div class="wrap">
+      <div class="chips" role="group" aria-label="Filter by group" data-chips>
+        <button class="chip-btn" data-group="all" aria-pressed="true">All decks <span data-count-all>0</span></button>
+      </div>
+      <div class="wall-tools">
+        <label class="search">
+          <span class="micro" style="position:absolute;left:-9999px">Search teams</span>
+          <input type="search" placeholder="Search a team" data-search />
+        </label>
+        <select class="sort" data-sort aria-label="Sort decks">
+          <option value="new">Newest first</option>
+          <option value="old">Oldest first</option>
+          <option value="team">Team name</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE WALL -->
+  <section class="wall">
+    <div class="wrap">
+      <div class="deck-grid" data-grid></div>
+
+      <div class="empty" data-empty hidden>
+        <div class="empty-art" aria-hidden="true"></div>
+        <h2 class="h3">No decks yet.</h2>
+        <p class="lede" style="margin-inline:auto">Be the first team on the wall. Your deck opens right in the browser, so the whole room can read it.</p>
+        <button class="btn btn-primary" data-open-upload>Upload your deck</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- UPLOAD BUTTON -->
+<div class="fab-wrap">
+  <button class="fab" data-open-upload aria-label="Upload your deck">＋</button>
+  <span class="fab-label">Upload</span>
+</div>
+
+<!-- POSTER -->
+<dialog class="sheet poster-sheet" data-poster-sheet aria-label="Event poster">
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <h2 class="h3">Event poster</h2>
+      <button class="icon-btn" data-poster-close aria-label="Close">✕</button>
+    </div>
+    <img class="poster-img" data-poster-img alt="The event poster, with the organiser's sign-up form and payment code on it" />
+    <p class="micro">Sign-ups and the fee live on this poster, not on Podium.</p>
+  </div>
+</dialog>
+
+<!-- UPLOAD SHEET -->
+<dialog class="sheet" data-upload-sheet aria-label="Upload your deck">
+  <form method="dialog" class="sheet-body" data-upload-form>
+    <div class="sheet-head">
+      <h2 class="h3">Upload your deck</h2>
+      <button class="icon-btn" value="cancel" aria-label="Close">✕</button>
+    </div>
+
+    <label class="drop" for="deckFile" data-deck-drop>
+      <input id="deckFile" type="file" accept=".pdf,.pptx,application/pdf" hidden data-deck-file />
+      <span class="drop-icon" aria-hidden="true">＋</span>
+      <span class="drop-title">Pick your file</span>
+      <span class="micro">PDF or PPTX · up to 25 MB · <span data-slide-rule>15 slides</span></span>
+    </label>
+
+    <div class="field">
+      <label for="teamName">Team name</label>
+      <input id="teamName" type="text" placeholder="Team Kestrel" required />
+    </div>
+
+    <div class="field">
+      <label for="teamCollege">College or company</label>
+      <input id="teamCollege" type="text" placeholder="PSG College of Technology" required />
+    </div>
+
+    <div class="field" data-group-field hidden>
+      <label for="deckGroup">Group</label>
+      <select id="deckGroup"></select>
+    </div>
+
+    <div class="field">
+      <label for="oneLiner">One line about your idea</label>
+      <input id="oneLiner" type="text" maxlength="90" placeholder="Cheaper health cover for gig workers" />
+    </div>
+
+    <p class="micro" data-upload-note role="status">Your slides are shown as pictures with your team name on them. The file itself stays private.</p>
+
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" value="cancel" type="submit">Cancel</button>
+      <button class="btn btn-primary" value="save" type="submit">Put it on the wall</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- DECK VIEWER -->
+<dialog class="viewer" data-viewer aria-label="Deck viewer">
+  <div class="viewer-top">
+    <div>
+      <h2 class="h3" data-viewer-team>Team</h2>
+      <p class="micro" data-viewer-sub>College · Group</p>
+    </div>
+    <button class="icon-btn" data-viewer-close aria-label="Close">✕</button>
+  </div>
+
+  <div class="viewer-stage">
+    <button class="nav-arrow" data-prev aria-label="Previous slide">‹</button>
+    <div class="slide" data-slide>
+      <span class="slide-n" data-slide-n>Slide 1</span>
+      <p class="micro" data-slide-note>Slides appear here once the file has been turned into pictures.</p>
+    </div>
+    <button class="nav-arrow" data-next aria-label="Next slide">›</button>
+  </div>
+
+  <div class="viewer-foot">
+    <span class="micro" data-viewer-count>Page 1</span>
+    <button class="vote-btn" data-viewer-vote>
+      <span class="vote-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18v-6H5l7-7 7 7h-4v6z"/></svg>
+      </span>
+      <span class="vote-text">Vote now</span>
+    </button>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=20261003121731"></script>
+<script src="supabase-client.js?v=20261003121731"></script>
+<script src="app.js?v=20261003121731"></script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Podium — Rate Presentation</title>
+<meta name="description" content="Rate live presentations in real-time." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-label%3D%22Podium%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%23F5F1EA%22%2F%3E%20%3Crect%20x%3D%229%22%20y%3D%2228%22%20width%3D%2215.5%22%20height%3D%2227%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3Cpath%20d%3D%22M27.5%2018.8c0-1.2.8-2.2%202-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z%22%20fill%3D%22%23C9541F%22%2F%3E%20%3Crect%20x%3D%2245.5%22%20y%3D%2233%22%20width%3D%2214%22%20height%3D%2222%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3C%2Fsvg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=20261015" />
+<style>
+  :root {
+    --star-empty: #D1D5DB;
+    --star-active: #F59E0B;
+    --star-hover: #FBBF24;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg, #F5F1EA);
+    touch-action: manipulation;
+  }
+  .rate-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--surface);
+  }
+  .rate-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 460px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px 20px 48px;
+  }
+  .rate-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 24px;
+    padding: 36px 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  }
+  .team-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(201,84,31,0.1);
+    color: var(--accent, #C9541F);
+    margin-bottom: 12px;
+  }
+  .team-heading {
+    font-size: clamp(26px, 7vw, 36px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 8px 0;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .session-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+  .stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 28px 0 20px;
+  }
+  .star-btn {
+    flex: 1;
+    max-width: 64px;
+    aspect-ratio: 1;
+    min-height: 58px;
+    background: var(--bg);
+    border: 2px solid var(--hairline);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+  }
+  .star-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--star-empty);
+    transition: fill 0.15s ease, transform 0.15s ease;
+  }
+  .star-btn .star-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .star-btn:active:not(:disabled) {
+    transform: scale(0.9);
+  }
+  .star-btn.active {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: var(--star-active);
+  }
+  .star-btn.active svg {
+    fill: var(--star-active);
+    transform: scale(1.12);
+  }
+  .star-btn.active .star-num {
+    color: var(--star-active);
+  }
+  .star-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .rating-feedback {
+    min-height: 60px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+  }
+  .feedback-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(52,168,83,0.12);
+    color: #1e7e34;
+    font-weight: 600;
+    margin-bottom: 6px;
+    animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .state-box {
+    padding: 24px 12px;
+  }
+  .state-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent, #C9541F);
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(0.8); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(0.8); opacity: 0.6; }
+  }
+</style>
+</head>
+<body>
+
+<header class="rate-header">
+  <a class="brand" href="index.html" style="font-size:16px">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true" style="width:24px;height:24px">
+      <rect width="64" height="64" rx="16" fill="#F5F1EA"/>
+      <rect x="9" y="28" width="15.5" height="27" rx="3" fill="#1B1A16"/>
+      <path d="M27.5 18.8c0-1.2.8-2.2 2-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z" fill="#C9541F"/>
+      <rect x="45.5" y="33" width="14" height="22" rx="3" fill="#1B1A16"/>
+    </svg>
+    Podium
+  </a>
+  <div style="font-family:monospace;font-size:13px;font-weight:700;letter-spacing:0.08em;background:var(--hairline);padding:4px 10px;border-radius:999px" id="header-code-pill">
+    CODE: ---
+  </div>
+</header>
+
+<main class="rate-container">
+
+  <!-- STATE: LOADING -->
+  <div class="rate-card" id="card-loading">
+    <span class="state-icon">&#9203;</span>
+    <h1 class="h3">Connecting to session...</h1>
+    <p class="micro" style="color:var(--text-muted);margin-top:8px">Anonymous sign-in in progress</p>
+  </div>
+
+  <!-- STATE: WRONG CODE / NOT FOUND -->
+  <div class="rate-card" id="card-not-found" style="display:none">
+    <span class="state-icon">&#128269;</span>
+    <h1 class="h2">Session not found</h1>
+    <p class="lede" style="margin:12px 0 20px" id="not-found-msg">
+      We couldn't find a live session with this code. Check the projector screen.
+    </p>
+    <form id="form-retry-code" style="display:flex;gap:8px;margin-bottom:16px">
+      <input type="text" id="retry-code-input" placeholder="6-character code" maxlength="6" style="text-transform:uppercase;font-family:monospace;font-weight:700;letter-spacing:0.1em;text-align:center" required />
+      <button type="submit" class="btn btn-primary btn-sm">Join</button>
+    </form>
+    <a href="index.html" class="btn btn-ghost btn-sm">Back to home</a>
+  </div>
+
+  <!-- STATE: SESSION FINISHED -->
+  <div class="rate-card" id="card-finished" style="display:none">
+    <span class="state-icon">&#127942;</span>
+    <h1 class="h2">Session Finished</h1>
+    <p class="lede" style="margin:12px 0 24px">
+      All presentations have ended. Look up at the big screen to see the final results and the winners on the podium!
+    </p>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:20px">
+      <span class="micro" style="color:var(--text-muted)">Session</span>
+      <p style="font-weight:600;margin-top:2px" id="finished-session-title"></p>
+    </div>
+    <a href="index.html" class="btn btn-primary btn-sm">Back to home</a>
+  </div>
+
+  <!-- STATE: WAITING FOR PRESENTATION -->
+  <div class="rate-card" id="card-waiting" style="display:none">
+    <span class="state-icon">&#9201;</span>
+    <div style="margin-bottom:12px">
+      <span class="pulse-dot"></span>
+      <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent,#C9541F)">Waiting for team</span>
+    </div>
+    <h1 class="h2" id="waiting-session-title">Live Session</h1>
+    <p class="lede" style="margin:12px 0 20px">
+      The host is setting up the next presentation. Your screen will update automatically.
+    </p>
+    <p class="micro" style="color:var(--text-muted)">Keep this page open</p>
+  </div>
+
+  <!-- STATE: RATING CLOSED FOR CURRENT PRESENTATION -->
+  <div class="rate-card" id="card-closed" style="display:none">
+    <span class="team-tag">Rating Closed</span>
+    <h1 class="team-heading" id="closed-team-name">Team Name</h1>
+    <p class="session-sub" id="closed-session-sub">Session Details</p>
+
+    <div style="background:var(--bg);border-radius:16px;padding:20px;margin:16px 0">
+      <p style="font-weight:600;color:var(--text)">Rating is currently closed</p>
+      <p class="micro" style="color:var(--text-muted);margin-top:4px" id="closed-status-note">
+        The host has paused rating for this presentation.
+      </p>
+      <div id="closed-my-rating" style="margin-top:12px;display:none">
+        <span class="micro" style="color:var(--text-muted)">Your submitted score:</span>
+        <div style="font-size:22px;color:var(--star-active);margin-top:2px" id="closed-stars-display"></div>
+      </div>
+    </div>
+    <p class="micro" style="color:var(--text-muted)">Screen will update when the host moves to the next presentation</p>
+  </div>
+
+  <!-- STATE: ACTIVE LIVE RATING -->
+  <div class="rate-card" id="card-rating" style="display:none">
+    <span class="team-tag" id="live-pos-tag">Presentation 1 of 5</span>
+    <h1 class="team-heading" id="live-team-name">Team Name</h1>
+    <p class="session-sub" id="live-session-sub">Session · College</p>
+
+    <div class="stars-row" id="stars-container" role="radiogroup" aria-label="Rating from 1 to 5 stars">
+      <button class="star-btn" data-star="1" role="radio" aria-checked="false" aria-label="1 star">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="star-num">1</span>
+      </button>
+      <button class="star-btn" data-star="2" role="radio" aria-checked="false" aria-label="2 stars">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="star-num">2</span>
+      </button>
+      <button class="star-btn" data-star="3" role="radio" aria-checked="false" aria-label="3 stars">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="star-num">3</span>
+      </button>
+      <button class="star-btn" data-star="4" role="radio" aria-checked="false" aria-label="4 stars">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="star-num">4</span>
+      </button>
+      <button class="star-btn" data-star="5" role="radio" aria-checked="false" aria-label="5 stars">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="star-num">5</span>
+      </button>
+    </div>
+
+    <div class="rating-feedback" id="rating-feedback">
+      <p class="micro" style="color:var(--text-muted)">Tap 1 to 5 stars to cast your rating</p>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=20261015"></script>
+<script src="supabase-client.js?v=20261015"></script>
+<script>
+(function audienceApp() {
+  const db = window.podiumDb;
+
+  // DOM Elements
+  const headerCodePill = document.getElementById('header-code-pill');
+  const cardLoading = document.getElementById('card-loading');
+  const cardNotFound = document.getElementById('card-not-found');
+  const notFoundMsg = document.getElementById('not-found-msg');
+  const formRetryCode = document.getElementById('form-retry-code');
+  const retryCodeInput = document.getElementById('retry-code-input');
+  const cardFinished = document.getElementById('card-finished');
+  const finishedSessionTitle = document.getElementById('finished-session-title');
+  const cardWaiting = document.getElementById('card-waiting');
+  const waitingSessionTitle = document.getElementById('waiting-session-title');
+  const cardClosed = document.getElementById('card-closed');
+  const closedTeamName = document.getElementById('closed-team-name');
+  const closedSessionSub = document.getElementById('closed-session-sub');
+  const closedStatusNote = document.getElementById('closed-status-note');
+  const closedMyRating = document.getElementById('closed-my-rating');
+  const closedStarsDisplay = document.getElementById('closed-stars-display');
+
+  const cardRating = document.getElementById('card-rating');
+  const livePosTag = document.getElementById('live-pos-tag');
+  const liveTeamName = document.getElementById('live-team-name');
+  const liveSessionSub = document.getElementById('live-session-sub');
+  const starsContainer = document.getElementById('stars-container');
+  const starButtons = starsContainer.querySelectorAll('.star-btn');
+  const ratingFeedback = document.getElementById('rating-feedback');
+
+  let currentCode = '';
+  let sessionData = null;
+  let activePresentationId = null;
+  let currentRating = null;
+  let pollTimer = null;
+  let isSubmitting = false;
+
+  function showCard(card) {
+    [cardLoading, cardNotFound, cardFinished, cardWaiting, cardClosed, cardRating].forEach((c) => {
+      c.style.display = c === card ? 'block' : 'none';
+    });
+  }
+
+  function setText(el, text) {
+    if (el) el.textContent = text ?? '';
+  }
+
+  // Extract code from URL query parameter
+  function getCodeFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('code') || '').toUpperCase().trim();
+  }
+
+  // Set star button highlights
+  function setStarSelection(starCount) {
+    starButtons.forEach((btn) => {
+      const star = parseInt(btn.dataset.star, 10);
+      const isSelected = star <= starCount;
+      btn.classList.toggle('active', isSelected);
+      btn.setAttribute('aria-checked', star === starCount ? 'true' : 'false');
+    });
+  }
+
+  function renderStarsString(stars) {
+    let s = '';
+    for (let i = 1; i <= 5; i++) {
+      s += i <= stars ? '★' : '☆';
+    }
+    return s;
+  }
+
+  // Show Feedback banner
+  function showFeedback(stars) {
+    if (!stars) {
+      ratingFeedback.innerHTML = `<p class="micro" style="color:var(--text-muted)">Tap 1 to 5 stars to cast your rating</p>`;
+      return;
+    }
+    ratingFeedback.innerHTML = `
+      <span class="feedback-badge">&#10003; Rated ${stars} ${stars === 1 ? 'star' : 'stars'}</span>
+      <p class="micro" style="color:var(--text-muted)">Thanks! You can change your rating until rating closes.</p>
+    `;
+  }
+
+  // Main fetch and sync cycle
+  async function syncSession() {
+    if (!currentCode) return;
+
+    const { data, error } = await db.getSessionPublic(currentCode);
+
+    if (error || !data || !data.found) {
+      setText(headerCodePill, `CODE: ${currentCode || '---'}`);
+      setText(notFoundMsg, `We couldn't find a live session with code "${currentCode}".`);
+      showCard(cardNotFound);
+      return;
+    }
+
+    sessionData = data;
+    setText(headerCodePill, `CODE: ${sessionData.code}`);
+
+    // State 1: Finished
+    if (sessionData.status === 'finished') {
+      setText(finishedSessionTitle, sessionData.title);
+      showCard(cardFinished);
+      return;
+    }
+
+    // State 2: Waiting for presentation
+    if (!sessionData.current_presentation) {
+      setText(waitingSessionTitle, sessionData.title);
+      showCard(cardWaiting);
+      activePresentationId = null;
+      currentRating = null;
+      return;
+    }
+
+    const pres = sessionData.current_presentation;
+    const presentationChanged = activePresentationId !== pres.id;
+    activePresentationId = pres.id;
+
+    // If presentation changed, fetch this phone's rating for the new presentation
+    if (presentationChanged) {
+      currentRating = await db.getMyRating(pres.id);
+      setStarSelection(currentRating || 0);
+      showFeedback(currentRating);
+    }
+
+    // State 3: Rating Closed
+    if (!sessionData.rating_open) {
+      setText(closedTeamName, pres.name);
+      setText(closedSessionSub, `${sessionData.title} ${sessionData.college ? '· ' + sessionData.college : ''}`);
+      if (currentRating) {
+        closedMyRating.style.display = 'block';
+        setText(closedStarsDisplay, `${renderStarsString(currentRating)} (${currentRating}/5)`);
+        setText(closedStatusNote, 'Rating has ended for this team. Your rating was registered.');
+      } else {
+        closedMyRating.style.display = 'none';
+        setText(closedStatusNote, 'Rating has not opened yet (or has ended) for this presentation.');
+      }
+      showCard(cardClosed);
+      return;
+    }
+
+    // State 4: Rating Open (Live voting screen)
+    setText(livePosTag, `Presentation ${pres.position || 1}`);
+    setText(liveTeamName, pres.name);
+    setText(liveSessionSub, `${sessionData.title} ${sessionData.college ? '· ' + sessionData.college : ''}`);
+
+    showCard(cardRating);
+  }
+
+  // Handle star button tap
+  async function handleStarTap(stars) {
+    if (isSubmitting || !activePresentationId || !sessionData?.rating_open) return;
+
+    isSubmitting = true;
+    const prevRating = currentRating;
+    currentRating = stars;
+
+    // Optimistic UI update
+    setStarSelection(stars);
+    showFeedback(stars);
+
+    try {
+      const { data, error } = await db.ratePresentation(activePresentationId, stars);
+      if (error) {
+        alert('Could not submit rating: ' + error);
+        currentRating = prevRating;
+        setStarSelection(prevRating || 0);
+        showFeedback(prevRating);
+      }
+    } catch (err) {
+      console.error('Rating failed:', err);
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
+  // Initialize
+  async function init() {
+    showCard(cardLoading);
+
+    // Silent anonymous auth
+    if (db) {
+      await db.signInAnonymously();
+    }
+
+    currentCode = getCodeFromUrl();
+
+    if (!currentCode) {
+      showCard(cardNotFound);
+      setText(notFoundMsg, 'Please enter a 6-character event code to join.');
+      return;
+    }
+
+    setText(headerCodePill, `CODE: ${currentCode}`);
+
+    // Initial sync
+    await syncSession();
+
+    // Start polling every 3 seconds
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(syncSession, 3000);
+  }
+
+  // Star button listeners
+  starButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const stars = parseInt(btn.dataset.star, 10);
+      handleStarTap(stars);
+    });
+  });
+
+  // Retry / re-enter code form
+  formRetryCode?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newCode = retryCodeInput.value.toUpperCase().trim();
+    if (newCode.length === 6) {
+      window.location.search = `?code=${encodeURIComponent(newCode)}`;
+    }
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

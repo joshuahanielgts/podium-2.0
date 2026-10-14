@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Podium — Live Audience Rating for Presentations</title>
+<meta name="description" content="Slido-style live rating tool for college pitch events. Audience rates 1 to 5 stars, screen updates in real time." />
+<meta property="og:title" content="Podium — Live Audience Rating for Presentations" />
+<meta property="og:description" content="Audience rates 1 to 5 stars on their phones, screen updates in real time, and the best team wins the podium." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="assets/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Podium — Live Audience Rating for Presentations" />
+<meta name="twitter:description" content="Audience rates 1 to 5 stars on their phones, screen updates in real time." />
+<meta name="twitter:image" content="assets/og-image.png" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-label%3D%22Podium%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%23F5F1EA%22%2F%3E%20%3Crect%20x%3D%229%22%20y%3D%2228%22%20width%3D%2215.5%22%20height%3D%2227%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3Cpath%20d%3D%22M27.5%2018.8c0-1.2.8-2.2%202-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z%22%20fill%3D%22%23C9541F%22%2F%3E%20%3Crect%20x%3D%2245.5%22%20y%3D%2233%22%20width%3D%2214%22%20height%3D%2222%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3C%2Fsvg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=20261015" />
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="header">
+  <div class="wrap">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#F5F1EA"/>
+          <rect x="9" y="28" width="15.5" height="27" rx="3" fill="#1B1A16"/>
+          <path d="M27.5 18.8c0-1.2.8-2.2 2-2.5l10.5-2.2c1.6-.3 3.1.9 3.1 2.5V52c0 1.7-1.3 3-3 3h-9.6c-1.7 0-3-1.3-3-3V18.8Z" fill="#C9541F"/>
+          <rect x="45.5" y="33" width="14" height="22" rx="3" fill="#1B1A16"/>
+        </svg>
+        Podium
+      </a>
+
+      <div class="header-actions">
+        <a class="btn btn-primary btn-sm" href="host.html">Host a session</a>
+        <button class="menu-btn" data-menu-btn aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="menu" id="menu" data-menu aria-label="Main">
+      <div class="fold fold-1">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#faq">Questions</a>
+      </div>
+      <div class="fold fold-2">
+        <a href="host.html">Host a session</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 720px)" srcset="assets/hero-mobile.jpg" />
+        <img class="hero-media" src="assets/hero-desktop.jpg" alt="" width="1600" height="900" fetchpriority="high" />
+      </picture>
+      <span class="hero-veil"></span>
+    </div>
+
+    <div class="wrap hero-content">
+      <h1 class="display">
+        Live audience rating.<br />
+        <em>Win the room.</em>
+      </h1>
+
+      <p class="lede">
+        Presenters pitch on stage, the audience rates 1 to 5 stars on their phones, and the big screen updates live in real time.
+      </p>
+
+      <form class="capsule" data-join>
+        <label class="micro" for="eventCode">Event code</label>
+        <input id="eventCode" name="code" placeholder="Enter 6-character code" maxlength="6" autocomplete="off" />
+        <button class="btn btn-primary" type="submit">Join to rate</button>
+      </form>
+
+      <p class="micro join-note" data-join-note role="status">
+        Enter the 6-character code from the screen · Running an event? <a href="host.html">Host a session</a>
+      </p>
+    </div>
+
+    <div class="wrap bridge-wrap" style="text-align:center;padding:24px 0">
+      <a class="scroll-cue" href="#how">
+        <span class="cue-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </span>
+        How it works
+      </a>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="rule">
+    <div class="wrap">
+      <h2 class="h2 reveal" style="text-align:center">Live rating in three simple steps</h2>
+      <p class="lede reveal" style="text-align:center;margin-inline:auto">From projector to podium with zero app installs.</p>
+
+      <div class="steps">
+        <article class="step reveal">
+          <p class="step-n">Step 01</p>
+          <h3>Host starts a session</h3>
+          <p>The coordinator enters presentation titles, gets a 6-character code, and puts the big-screen projector page on display.</p>
+        </article>
+        <article class="step reveal">
+          <p class="step-n">Step 02</p>
+          <h3>Audience rates 1 to 5 stars</h3>
+          <p>Audience scans the QR code from their seats. Silent anonymous sign-in — no forms or passwords. Tap 1 to 5 stars per pitch.</p>
+        </article>
+        <article class="step reveal">
+          <p class="step-n">Step 03</p>
+          <h3>Live screen &amp; podium</h3>
+          <p>The big screen updates live with average ratings and distribution bars. At the end, the podium crowns the top 3 winners.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES & ROLES -->
+  <section id="features" class="rule">
+    <div class="wrap">
+      <h2 class="h2 reveal" style="text-align:center">Built for auditorium pitches</h2>
+      <p class="lede reveal" style="margin-inline:auto;text-align:center">
+        Fast, lightweight, and rock-solid on college Wi-Fi.
+      </p>
+
+      <div class="grid-3" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px;margin-top:40px">
+        <div class="host-card reveal" style="background:var(--surface);border:1px solid var(--hairline);border-radius:20px;padding:32px">
+          <span style="font-size:28px;display:block;margin-bottom:12px">&#9881;</span>
+          <h3 class="h3" style="margin-bottom:8px">Coordinator Console</h3>
+          <p style="color:var(--text-muted);font-size:15px;line-height:1.5">
+            Switch live presentations, open or close rating, hide scores during pitches, and reveal the final podium with one click.
+          </p>
+          <div style="margin-top:20px">
+            <a class="btn btn-primary btn-sm" href="host.html">Open host console</a>
+          </div>
+        </div>
+
+        <div class="host-card reveal" style="background:var(--surface);border:1px solid var(--hairline);border-radius:20px;padding:32px">
+          <span style="font-size:28px;display:block;margin-bottom:12px">&#128241;</span>
+          <h3 class="h3" style="margin-bottom:8px">Mobile Audience</h3>
+          <p style="color:var(--text-muted);font-size:15px;line-height:1.5">
+            Instant anonymous sign-in in the background. 5 big tap targets that work comfortably with one thumb, with instant confirmation.
+          </p>
+          <div style="margin-top:20px">
+            <a class="btn btn-ghost btn-sm" href="#main">Join with code</a>
+          </div>
+        </div>
+
+        <div class="host-card reveal" style="background:var(--surface);border:1px solid var(--hairline);border-radius:20px;padding:32px">
+          <span style="font-size:28px;display:block;margin-bottom:12px">&#128421;</span>
+          <h3 class="h3" style="margin-bottom:8px">Projector Big Screen</h3>
+          <p style="color:var(--text-muted);font-size:15px;line-height:1.5">
+            High-contrast dark design readable from the back row. Real-time animated rating bars with automatic 2-second fallback polling.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="rule">
+    <div class="wrap">
+      <h2 class="h2 reveal" style="text-align:center">Frequently asked questions</h2>
+      <p class="lede reveal" style="margin-inline:auto;text-align:center">
+        Everything you need to know before your event starts.
+      </p>
+
+      <div class="faq" style="max-width:760px;margin:32px auto 0">
+        <details>
+          <summary>Do audience members need to sign up or download an app?</summary>
+          <p>No. When an audience member scans the QR code or enters the code, a silent anonymous session is created in the background. No email, password, or app download is required.</p>
+        </details>
+        <details>
+          <summary>How is duplicate voting prevented?</summary>
+          <p>The database enforces a strict unique constraint on (presentation_id, voter_id). A voter can change their rating while the rating window is open, but they cannot submit multiple votes for the same team.</p>
+        </details>
+        <details>
+          <summary>Can the host hide scores while a team is pitching?</summary>
+          <p>Yes. The host console includes a "Hide Scores on Screen" button. While hidden, the projector displays "Voting in progress..." so the room stays focused on the presentation until the host reveals the numbers.</p>
+        </details>
+        <details>
+          <summary>What happens if campus Wi-Fi drops?</summary>
+          <p>Podium uses Supabase Realtime for instant updates and includes an automatic 2-second polling fallback on the big screen. Even if WebSockets disconnect, the screen continues updating seamlessly.</p>
+        </details>
+        <details>
+          <summary>How do ties work on the leaderboard?</summary>
+          <p>Podium uses standard competition ranking: if two teams tie for 1st place with identical average ratings, both show Rank 1 on the top step, and the next team is placed at Rank 3.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="rule">
+    <div class="wrap" style="text-align:center">
+      <h2 class="h2 reveal">Ready to run your live rating?</h2>
+      <p class="lede reveal" style="margin-inline:auto">
+        Set up a session in 30 seconds and project your QR code.
+      </p>
+      <div class="cta-row reveal" style="justify-content:center;margin-top:24px">
+        <a class="btn btn-primary btn-lg" href="host.html">Create a session</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer rule">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="16" fill="#F5F1EA"/>
+            <rect x="9" y="28" width="15.5" height="27" rx="3" fill="#1B1A16"/>
+            <path d="M27.5 18.8c0-1.2.8-2.2%202-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z" fill="#C9541F"/>
+            <rect x="45.5" y="33" width="14" height="22" rx="3" fill="#1B1A16"/>
+          </svg>
+          Podium
+        </a>
+        <p class="footer-blurb">Slido-style live rating tool for college pitch events. Real-time scores, zero app installs.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="host.html">Host console</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#faq">Questions</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Audience</h4>
+        <ul>
+          <li><a href="#main">Enter event code</a></li>
+          <li><a href="https://github.com/joshuahanielgts/podium-2.0.git">GitHub Repository</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="micro">© 2026 Podium</p>
+      <p class="micro">Open-source live rating tool for college presentations and hackathons.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js?v=20261015"></script>
+</body>
+</html>

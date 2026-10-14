@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Podium — Host Console</title>
+<meta name="description" content="Coordinator console to manage live presentations and rating." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-label%3D%22Podium%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%23F5F1EA%22%2F%3E%20%3Crect%20x%3D%229%22%20y%3D%2228%22%20width%3D%2215.5%22%20height%3D%2227%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3Cpath%20d%3D%22M27.5%2018.8c0-1.2.8-2.2%202-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z%22%20fill%3D%22%23C9541F%22%2F%3E%20%3Crect%20x%3D%2245.5%22%20y%3D%2233%22%20width%3D%2214%22%20height%3D%2222%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3C%2Fsvg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=20261015" />
+<style>
+  .host-wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
+  .host-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-xl, 20px);
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  }
+  .session-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .session-code-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--hairline);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    font-family: monospace;
+  }
+  .live-box {
+    background: linear-gradient(135deg, rgba(201,84,31,0.06), rgba(201,84,31,0.01));
+    border: 2px solid var(--accent, #C9541F);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+  .live-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent, #C9541F);
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-top: 10px;
+  }
+  .rating-badge.open { background: rgba(52,168,83,0.15); color: #1e7e34; }
+  .rating-badge.closed { background: rgba(234,67,53,0.12); color: #c5221f; }
+  .control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .pres-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .pres-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--bg);
+    border: 1px solid var(--hairline);
+    padding: 14px 18px;
+    border-radius: 12px;
+    transition: border-color 0.2s;
+  }
+  .pres-row.active {
+    border-color: var(--accent, #C9541F);
+    background: rgba(201,84,31,0.04);
+  }
+  .pres-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+  .pres-pos {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .pres-actions { display: flex; gap: 6px; align-items: center; }
+  .stats-summary {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin: 16px 0;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .stat-val { font-size: 28px; font-weight: 700; }
+  .stat-lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .qr-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .qr-modal.show { display: flex; }
+  .qr-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+    color: #111;
+  }
+  #qr-target { display: flex; justify-content: center; margin: 20px 0; }
+  #qr-target img, #qr-target canvas { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="wrap">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="16" fill="#F5F1EA"/>
+          <rect x="9" y="28" width="15.5" height="27" rx="3" fill="#1B1A16"/>
+          <path d="M27.5 18.8c0-1.2.8-2.2 2-2.5l10.5-2.2c1.6-.3 3.1.9 3.1 2.5V52c0 1.7-1.3 3-3 3h-9.6c-1.7 0-3-1.3-3-3V18.8Z" fill="#C9541F"/>
+          <rect x="45.5" y="33" width="14" height="22" rx="3" fill="#1B1A16"/>
+        </svg>
+        Podium <span style="font-size:12px;font-weight:400;margin-left:6px;opacity:0.7">Coordinator</span>
+      </a>
+
+      <div class="header-actions" id="auth-header">
+        <span class="micro" id="host-user-email"></span>
+        <button class="btn btn-ghost btn-sm" id="btn-signout" style="display:none">Sign out</button>
+        <a class="btn btn-ghost btn-sm" href="index.html">Back to site</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="host-wrap">
+
+  <!-- STATE: CHECKING AUTH -->
+  <div id="view-loading" class="host-card" style="text-align:center;padding:60px 20px">
+    <p class="lede">Loading coordinator console...</p>
+  </div>
+
+  <!-- STATE: AUTH REQUIRED -->
+  <div id="view-auth" class="host-card" style="display:none;text-align:center;max-width:520px;margin:40px auto">
+    <h1 class="h2">Coordinator sign-in</h1>
+    <p class="lede" style="margin:12px 0 24px">
+      Sign in with your Google account to create and manage live rating sessions.
+    </p>
+    <button class="btn btn-primary btn-lg" id="btn-google-login" style="width:100%;justify-content:center">
+      Sign in with Google
+    </button>
+    <p class="micro" style="margin-top:16px;color:var(--text-muted)">
+      Audience members do not need to sign in — they vote anonymously from their phones.
+    </p>
+  </div>
+
+  <!-- STATE: SESSIONS LIST & CREATE -->
+  <div id="view-sessions" style="display:none">
+    <div class="host-card">
+      <h2 class="h2" style="margin-bottom:8px">Create a new session</h2>
+      <p class="lede" style="margin-bottom:24px">Add your event details and initial presentations.</p>
+
+      <form id="form-create-session">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px,1fr));gap:16px;margin-bottom:20px">
+          <div class="field">
+            <label for="new-session-title">Session title *</label>
+            <input type="text" id="new-session-title" placeholder="e.g. Startup Pitch Fest '26" required maxlength="100" />
+          </div>
+          <div class="field">
+            <label for="new-session-college">College or venue</label>
+            <input type="text" id="new-session-college" placeholder="e.g. PSG College of Technology" maxlength="100" />
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px">Presentations / Teams</label>
+          <div id="create-pres-inputs" style="display:flex;flex-direction:column;gap:8px">
+            <input type="text" class="pres-input" placeholder="1. Team Name (e.g. Team Monsoon)" required />
+            <input type="text" class="pres-input" placeholder="2. Team Name (e.g. Team Kestrel)" />
+            <input type="text" class="pres-input" placeholder="3. Team Name (e.g. Team Nightshift)" />
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-add-pres-field" style="margin-top:10px">
+            + Add another presentation
+          </button>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-session">
+          Create session &amp; get code
+        </button>
+      </form>
+    </div>
+
+    <!-- PREVIOUS SESSIONS -->
+    <div class="host-card">
+      <h2 class="h3" style="margin-bottom:16px">Your sessions</h2>
+      <div id="my-sessions-list" style="display:flex;flex-direction:column;gap:12px">
+        <p class="micro">Loading your sessions...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE: ACTIVE SESSION CONSOLE -->
+  <div id="view-console" style="display:none">
+    
+    <!-- SESSION HEADER & CONTROLS -->
+    <div class="host-card">
+      <div class="session-header">
+        <div>
+          <button class="btn btn-ghost btn-sm" id="btn-back-sessions" style="margin-bottom:8px">&larr; All sessions</button>
+          <h1 class="h2" id="console-title">Session</h1>
+          <p class="micro" id="console-college" style="color:var(--text-muted)"></p>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+          <div class="session-code-pill" title="Audience code">
+            CODE: <span id="console-code" style="color:var(--accent,#C9541F)"></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btn-show-qr" title="Show QR Code">
+            QR Code
+          </button>
+          <button class="btn btn-ghost btn-sm" id="btn-copy-link" title="Copy link for audience">
+            Copy link
+          </button>
+          <a class="btn btn-primary btn-sm" id="btn-open-screen" target="_blank" href="#" title="Open projector view">
+            Open big screen &nearr;
+          </a>
+        </div>
+      </div>
+
+      <!-- CURRENT LIVE PRESENTATION HERO BOX -->
+      <div class="live-box" id="live-box">
+        <span class="live-tag">Currently Live</span>
+        <h2 class="h1" id="live-team-name" style="margin:8px 0">No presentation selected</h2>
+        <p class="micro" id="live-team-pos" style="color:var(--text-muted)">Select a presentation below to begin</p>
+
+        <div class="stats-summary" id="live-stats-row">
+          <div class="stat-item">
+            <span class="stat-val" id="live-avg">&mdash;</span>
+            <span class="stat-lbl">Average Rating</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="live-count">0</span>
+            <span class="stat-lbl">Total Votes</span>
+          </div>
+        </div>
+
+        <div>
+          <span class="rating-badge closed" id="badge-rating-status">Rating Closed</span>
+        </div>
+
+        <!-- LIVE CONTROLS -->
+        <div class="control-grid">
+          <button class="btn btn-primary btn-lg" id="btn-toggle-rating" style="grid-column: span 2">
+            Open Rating
+          </button>
+          <button class="btn btn-ghost" id="btn-prev-pres">
+            &larr; Previous
+          </button>
+          <button class="btn btn-ghost" id="btn-next-pres">
+            Next &rarr;
+          </button>
+          <button class="btn btn-ghost" id="btn-toggle-scores">
+            Hide Scores on Screen
+          </button>
+          <button class="btn btn-ghost" id="btn-finish-session" style="color:var(--vote,#EA4335)">
+            Finish Session
+          </button>
+        </div>
+      </div>
+
+      <!-- PRESENTATIONS LIST -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 class="h3">Presentations (<span id="pres-count">0</span>)</h3>
+          <span class="micro" style="color:var(--text-muted)">Order of appearance</span>
+        </div>
+
+        <div class="pres-list" id="presentations-container">
+          <!-- Filled dynamically -->
+        </div>
+
+        <!-- INLINE ADD PRESENTATION -->
+        <form id="form-inline-add-pres" style="display:flex;gap:10px;margin-top:16px">
+          <input type="text" id="inline-pres-name" placeholder="Add next presentation name..." required style="flex:1" maxlength="100" />
+          <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<!-- QR CODE MODAL -->
+<div class="qr-modal" id="qr-modal" aria-hidden="true">
+  <div class="qr-box">
+    <h3 class="h3" style="color:#111">Scan to Rate</h3>
+    <p style="font-size:13px;color:#666;margin-top:4px">Point phone camera to join</p>
+    <div id="qr-target"></div>
+    <div style="font-family:monospace;font-size:24px;font-weight:700;letter-spacing:0.1em;color:#111;margin-bottom:16px" id="qr-code-text"></div>
+    <button class="btn btn-primary btn-sm" id="btn-close-qr" style="width:100%;justify-content:center">Close</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=20261015"></script>
+<script src="supabase-client.js?v=20261015"></script>
+<script>
+(function hostApp() {
+  const db = window.podiumDb;
+
+  // DOM elements
+  const viewLoading = document.getElementById('view-loading');
+  const viewAuth = document.getElementById('view-auth');
+  const viewSessions = document.getElementById('view-sessions');
+  const viewConsole = document.getElementById('view-console');
+
+  const authHeader = document.getElementById('auth-header');
+  const hostUserEmail = document.getElementById('host-user-email');
+  const btnSignout = document.getElementById('btn-signout');
+  const btnGoogleLogin = document.getElementById('btn-google-login');
+
+  const formCreateSession = document.getElementById('form-create-session');
+  const createPresInputs = document.getElementById('create-pres-inputs');
+  const btnAddPresField = document.getElementById('btn-add-pres-field');
+  const mySessionsList = document.getElementById('my-sessions-list');
+
+  const consoleTitle = document.getElementById('console-title');
+  const consoleCollege = document.getElementById('console-college');
+  const consoleCode = document.getElementById('console-code');
+  const btnBackSessions = document.getElementById('btn-back-sessions');
+  const btnShowQr = document.getElementById('btn-show-qr');
+  const btnCopyLink = document.getElementById('btn-copy-link');
+  const btnOpenScreen = document.getElementById('btn-open-screen');
+
+  const liveTeamName = document.getElementById('live-team-name');
+  const liveTeamPos = document.getElementById('live-team-pos');
+  const liveAvg = document.getElementById('live-avg');
+  const liveCount = document.getElementById('live-count');
+  const badgeRatingStatus = document.getElementById('badge-rating-status');
+
+  const btnToggleRating = document.getElementById('btn-toggle-rating');
+  const btnPrevPres = document.getElementById('btn-prev-pres');
+  const btnNextPres = document.getElementById('btn-next-pres');
+  const btnToggleScores = document.getElementById('btn-toggle-scores');
+  const btnFinishSession = document.getElementById('btn-finish-session');
+
+  const presCount = document.getElementById('pres-count');
+  const presContainer = document.getElementById('presentations-container');
+  const formInlineAddPres = document.getElementById('form-inline-add-pres');
+  const inlinePresName = document.getElementById('inline-pres-name');
+
+  const qrModal = document.getElementById('qr-modal');
+  const qrTarget = document.getElementById('qr-target');
+  const qrCodeText = document.getElementById('qr-code-text');
+  const btnCloseQr = document.getElementById('btn-close-qr');
+
+  let currentSession = null;
+  let currentPresentations = [];
+  let pollInterval = null;
+  let qrCodeInstance = null;
+
+  // View state switcher
+  function showView(view) {
+    viewLoading.style.display = view === 'loading' ? 'block' : 'none';
+    viewAuth.style.display = view === 'auth' ? 'block' : 'none';
+    viewSessions.style.display = view === 'sessions' ? 'block' : 'none';
+    viewConsole.style.display = view === 'console' ? 'block' : 'none';
+  }
+
+  // Safe text setter
+  function setText(el, text) {
+    if (el) el.textContent = text ?? '';
+  }
+
+  // Audience URL helper
+  function getAudienceUrl(code) {
+    const loc = window.location;
+    const base = loc.origin + loc.pathname.replace(/host\.html.*$/, 'rate.html');
+    return `${base}?code=${encodeURIComponent(code)}`;
+  }
+
+  // Screen URL helper
+  function getScreenUrl(code) {
+    const loc = window.location;
+    const base = loc.origin + loc.pathname.replace(/host\.html.*$/, 'screen.html');
+    return `${base}?code=${encodeURIComponent(code)}`;
+  }
+
+  // Initial Auth Check
+  async function init() {
+    if (!db) {
+      showView('auth');
+      return;
+    }
+
+    const user = await db.user();
+    if (!user) {
+      showView('auth');
+      return;
+    }
+
+    // Host is signed in
+    setText(hostUserEmail, user.email || 'Coordinator');
+    btnSignout.style.display = 'inline-block';
+
+    // Check if session ID in URL
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('id');
+
+    if (sessionId) {
+      await loadConsole(sessionId);
+    } else {
+      await loadSessions();
+    }
+  }
+
+  // Google Login
+  btnGoogleLogin?.addEventListener('click', () => {
+    if (db) db.signInHost(window.location.href);
+  });
+
+  // Sign out
+  btnSignout?.addEventListener('click', async () => {
+    if (db) await db.signOut();
+    window.location.href = 'host.html';
+  });
+
+  // Load Sessions List
+  async function loadSessions() {
+    showView('loading');
+    const { data: sessions, error } = await db.getMySessions();
+    showView('sessions');
+
+    if (error) {
+      mySessionsList.innerHTML = '';
+      const errP = document.createElement('p');
+      errP.className = 'micro';
+      errP.style.color = 'var(--vote)';
+      errP.textContent = 'Error: ' + error;
+      mySessionsList.appendChild(errP);
+      return;
+    }
+
+    if (!sessions || sessions.length === 0) {
+      mySessionsList.innerHTML = `<p class="micro" style="color:var(--text-muted)">No sessions created yet. Create your first one above!</p>`;
+      return;
+    }
+
+    mySessionsList.innerHTML = '';
+    sessions.forEach((s) => {
+      const card = document.createElement('div');
+      card.className = 'pres-row';
+      const isLive = s.status === 'live';
+      
+      const left = document.createElement('div');
+      left.style.flex = '1';
+      
+      const titleEl = document.createElement('h4');
+      titleEl.style.fontSize = '16px';
+      titleEl.style.fontWeight = '600';
+      titleEl.textContent = s.title;
+      
+      const metaEl = document.createElement('p');
+      metaEl.className = 'micro';
+      metaEl.style.color = 'var(--text-muted)';
+      metaEl.textContent = `${s.college || 'Venue unlisted'} • Code: ${s.code} • ${s.presentations?.length || 0} presentations`;
+
+      left.appendChild(titleEl);
+      left.appendChild(metaEl);
+
+      const right = document.createElement('div');
+      right.style.display = 'flex';
+      right.style.gap = '8px';
+      right.style.alignItems = 'center';
+
+      const badge = document.createElement('span');
+      badge.className = `rating-badge ${isLive ? 'open' : 'closed'}`;
+      badge.textContent = isLive ? 'LIVE' : 'FINISHED';
+
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn btn-primary btn-sm';
+      openBtn.textContent = 'Open console';
+      openBtn.addEventListener('click', () => {
+        window.history.pushState({}, '', `host.html?id=${s.id}`);
+        loadConsole(s.id);
+      });
+
+      right.appendChild(badge);
+      right.appendChild(openBtn);
+
+      card.appendChild(left);
+      card.appendChild(right);
+      mySessionsList.appendChild(card);
+    });
+  }
+
+  // Dynamic Add presentation input in creation form
+  btnAddPresField?.addEventListener('click', () => {
+    const count = createPresInputs.querySelectorAll('input').length + 1;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'pres-input';
+    input.placeholder = `${count}. Team Name`;
+    createPresInputs.appendChild(input);
+    input.focus();
+  });
+
+  // Create Session Form Submit
+  formCreateSession?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('new-session-title').value.trim();
+    const college = document.getElementById('new-session-college').value.trim();
+    const inputs = createPresInputs.querySelectorAll('input');
+    const presentationNames = Array.from(inputs).map((inp) => inp.value.trim()).filter(Boolean);
+
+    if (!title) return;
+
+    const submitBtn = document.getElementById('btn-submit-session');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating session...';
+
+    const { data, error } = await db.createSession({ title, college, presentationNames });
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create session & get code';
+
+    if (error) {
+      alert('Could not create session: ' + error);
+      return;
+    }
+
+    // Go directly to console for new session
+    window.history.pushState({}, '', `host.html?id=${data.session.id}`);
+    await loadConsole(data.session.id);
+  });
+
+  // Back to all sessions
+  btnBackSessions?.addEventListener('click', () => {
+    if (pollInterval) clearInterval(pollInterval);
+    window.history.pushState({}, '', 'host.html');
+    loadSessions();
+  });
+
+  // Load Console for specific Session
+  async function loadConsole(sessionId) {
+    showView('loading');
+    const { data, error } = await db.getHostSession(sessionId);
+
+    if (error || !data) {
+      alert('Session not found or inaccessible: ' + (error || 'Unknown error'));
+      loadSessions();
+      return;
+    }
+
+    currentSession = data.session;
+    currentPresentations = data.presentations;
+
+    renderConsole();
+    showView('console');
+
+    // Poll live stats every 3 seconds while in console
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(refreshLiveStats, 3000);
+  }
+
+  function renderConsole() {
+    if (!currentSession) return;
+
+    setText(consoleTitle, currentSession.title);
+    setText(consoleCollege, currentSession.college || 'Venue not specified');
+    setText(consoleCode, currentSession.code);
+
+    btnOpenScreen.href = getScreenUrl(currentSession.code);
+
+    // Active presentation
+    const active = currentPresentations.find((p) => p.id === currentSession.current_presentation_id);
+    if (active) {
+      setText(liveTeamName, active.name);
+      setText(liveTeamPos, `Presentation ${active.position} of ${currentPresentations.length}`);
+    } else {
+      setText(liveTeamName, currentPresentations.length > 0 ? 'No presentation live' : 'No presentations added');
+      setText(liveTeamPos, currentPresentations.length > 0 ? 'Click "Make Live" below' : 'Add teams below to begin');
+    }
+
+    // Rating status button and badge
+    updateRatingControls();
+
+    // Show/hide scores button
+    btnToggleScores.textContent = currentSession.show_scores ? 'Hide Scores on Screen' : 'Show Scores on Screen';
+
+    // Finish session button state
+    if (currentSession.status === 'finished') {
+      btnFinishSession.textContent = 'Session Finished (Reopen)';
+      btnFinishSession.style.color = 'var(--text-muted)';
+    } else {
+      btnFinishSession.textContent = 'Finish Session';
+      btnFinishSession.style.color = 'var(--vote, #EA4335)';
+    }
+
+    // Render presentations list
+    renderPresentationsList();
+
+    // Fetch initial stats
+    refreshLiveStats();
+  }
+
+  function updateRatingControls() {
+    if (currentSession.rating_open) {
+      badgeRatingStatus.className = 'rating-badge open';
+      badgeRatingStatus.textContent = 'Rating Open (Voting Live)';
+      btnToggleRating.textContent = 'Stop Rating';
+      btnToggleRating.className = 'btn btn-primary btn-lg';
+      btnToggleRating.style.background = '#c5221f';
+      btnToggleRating.style.borderColor = '#c5221f';
+    } else {
+      badgeRatingStatus.className = 'rating-badge closed';
+      badgeRatingStatus.textContent = 'Rating Closed';
+      btnToggleRating.textContent = 'Open Rating';
+      btnToggleRating.className = 'btn btn-primary btn-lg';
+      btnToggleRating.style.background = '';
+      btnToggleRating.style.borderColor = '';
+    }
+  }
+
+  function renderPresentationsList() {
+    setText(presCount, currentPresentations.length);
+    presContainer.innerHTML = '';
+
+    currentPresentations.forEach((p, idx) => {
+      const isLive = p.id === currentSession.current_presentation_id;
+      const row = document.createElement('div');
+      row.className = `pres-row ${isLive ? 'active' : ''}`;
+
+      const info = document.createElement('div');
+      info.className = 'pres-info';
+
+      const pos = document.createElement('div');
+      pos.className = 'pres-pos';
+      pos.textContent = p.position;
+
+      const name = document.createElement('div');
+      name.style.fontWeight = isLive ? '700' : '500';
+      name.textContent = p.name;
+      if (isLive) {
+        const liveIndicator = document.createElement('span');
+        liveIndicator.className = 'rating-badge open';
+        liveIndicator.style.marginLeft = '10px';
+        liveIndicator.style.fontSize = '11px';
+        liveIndicator.textContent = 'LIVE';
+        name.appendChild(liveIndicator);
+      }
+
+      info.appendChild(pos);
+      info.appendChild(name);
+
+      const actions = document.createElement('div');
+      actions.className = 'pres-actions';
+
+      // Set Live button
+      if (!isLive) {
+        const setLiveBtn = document.createElement('button');
+        setLiveBtn.className = 'btn btn-ghost btn-sm';
+        setLiveBtn.textContent = 'Make live';
+        setLiveBtn.addEventListener('click', () => setLive(p.id));
+        actions.appendChild(setLiveBtn);
+      }
+
+      // Move Up
+      if (idx > 0) {
+        const upBtn = document.createElement('button');
+        upBtn.className = 'btn btn-ghost btn-sm';
+        upBtn.innerHTML = '&uarr;';
+        upBtn.title = 'Move up';
+        upBtn.addEventListener('click', () => movePresentation(idx, -1));
+        actions.appendChild(upBtn);
+      }
+
+      // Move Down
+      if (idx < currentPresentations.length - 1) {
+        const downBtn = document.createElement('button');
+        downBtn.className = 'btn btn-ghost btn-sm';
+        downBtn.innerHTML = '&darr;';
+        downBtn.title = 'Move down';
+        downBtn.addEventListener('click', () => movePresentation(idx, 1));
+        actions.appendChild(downBtn);
+      }
+
+      // Delete
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn btn-ghost btn-sm';
+      delBtn.innerHTML = '&times;';
+      delBtn.title = 'Delete team';
+      delBtn.style.color = 'var(--vote, #EA4335)';
+      delBtn.addEventListener('click', () => deletePresentation(p.id, p.name));
+      actions.appendChild(delBtn);
+
+      row.appendChild(info);
+      row.appendChild(actions);
+      presContainer.appendChild(row);
+    });
+  }
+
+  // Set active live presentation
+  async function setLive(presId) {
+    const { data, error } = await db.updateSession(currentSession.id, {
+      current_presentation_id: presId,
+    });
+    if (error) {
+      alert('Could not set live: ' + error);
+      return;
+    }
+    currentSession.current_presentation_id = presId;
+    renderConsole();
+  }
+
+  // Move presentation up or down
+  async function movePresentation(index, delta) {
+    const targetIdx = index + delta;
+    if (targetIdx < 0 || targetIdx >= currentPresentations.length) return;
+
+    const temp = currentPresentations[index];
+    currentPresentations[index] = currentPresentations[targetIdx];
+    currentPresentations[targetIdx] = temp;
+
+    const orderedIds = currentPresentations.map((p) => p.id);
+    const { error } = await db.reorderPresentations(currentSession.id, orderedIds);
+    if (error) {
+      alert('Could not reorder: ' + error);
+      return;
+    }
+
+    // Refresh positions
+    currentPresentations.forEach((p, i) => { p.position = i + 1; });
+    renderPresentationsList();
+  }
+
+  // Delete presentation
+  async function deletePresentation(presId, name) {
+    if (!confirm(`Remove "${name}" from this session?`)) return;
+
+    const { error } = await db.deletePresentation(presId);
+    if (error) {
+      alert('Could not delete: ' + error);
+      return;
+    }
+
+    currentPresentations = currentPresentations.filter((p) => p.id !== presId);
+    if (currentSession.current_presentation_id === presId) {
+      currentSession.current_presentation_id = currentPresentations[0]?.id || null;
+      await db.updateSession(currentSession.id, { current_presentation_id: currentSession.current_presentation_id });
+    }
+    renderConsole();
+  }
+
+  // Inline Add Presentation
+  formInlineAddPres?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = inlinePresName.value.trim();
+    if (!name) return;
+
+    const newPos = currentPresentations.length + 1;
+    const { data: newPres, error } = await db.addPresentation(currentSession.id, name, newPos);
+    if (error) {
+      alert('Could not add presentation: ' + error);
+      return;
+    }
+
+    inlinePresName.value = '';
+    currentPresentations.push(newPres);
+
+    // If no presentation was live, make this one live
+    if (!currentSession.current_presentation_id) {
+      await setLive(newPres.id);
+    } else {
+      renderConsole();
+    }
+  });
+
+  // Toggle Rating Open / Closed
+  btnToggleRating?.addEventListener('click', async () => {
+    if (!currentSession) return;
+    const nextState = !currentSession.rating_open;
+    const { error } = await db.updateSession(currentSession.id, { rating_open: nextState });
+    if (error) {
+      alert('Could not toggle rating: ' + error);
+      return;
+    }
+    currentSession.rating_open = nextState;
+    updateRatingControls();
+  });
+
+  // Next Presentation button
+  btnNextPres?.addEventListener('click', () => {
+    if (!currentPresentations.length) return;
+    const curIdx = currentPresentations.findIndex((p) => p.id === currentSession.current_presentation_id);
+    if (curIdx < currentPresentations.length - 1) {
+      setLive(currentPresentations[curIdx + 1].id);
+    } else {
+      alert('Already at the final presentation.');
+    }
+  });
+
+  // Previous Presentation button
+  btnPrevPres?.addEventListener('click', () => {
+    if (!currentPresentations.length) return;
+    const curIdx = currentPresentations.findIndex((p) => p.id === currentSession.current_presentation_id);
+    if (curIdx > 0) {
+      setLive(currentPresentations[curIdx - 1].id);
+    } else {
+      alert('Already at the first presentation.');
+    }
+  });
+
+  // Toggle Show / Hide Scores on big screen
+  btnToggleScores?.addEventListener('click', async () => {
+    if (!currentSession) return;
+    const nextScores = !currentSession.show_scores;
+    const { error } = await db.updateSession(currentSession.id, { show_scores: nextScores });
+    if (error) {
+      alert('Could not toggle scores: ' + error);
+      return;
+    }
+    currentSession.show_scores = nextScores;
+    btnToggleScores.textContent = nextScores ? 'Hide Scores on Screen' : 'Show Scores on Screen';
+  });
+
+  // Finish Session
+  btnFinishSession?.addEventListener('click', async () => {
+    if (!currentSession) return;
+    const isFinished = currentSession.status === 'finished';
+    const msg = isFinished
+      ? 'Reopen this session as Live?'
+      : 'Finish this session? This stops rating and shows the final leaderboard on the big screen.';
+    
+    if (!confirm(msg)) return;
+
+    const nextStatus = isFinished ? 'live' : 'finished';
+    const { error } = await db.updateSession(currentSession.id, {
+      status: nextStatus,
+      rating_open: false,
+    });
+    if (error) {
+      alert('Could not update session status: ' + error);
+      return;
+    }
+
+    currentSession.status = nextStatus;
+    currentSession.rating_open = false;
+    renderConsole();
+  });
+
+  // Copy Audience Link
+  btnCopyLink?.addEventListener('click', () => {
+    if (!currentSession) return;
+    const url = getAudienceUrl(currentSession.code);
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = btnCopyLink.textContent;
+      btnCopyLink.textContent = 'Copied!';
+      setTimeout(() => { btnCopyLink.textContent = orig; }, 1800);
+    }).catch(() => {
+      prompt('Audience link:', url);
+    });
+  });
+
+  // Show QR Modal
+  btnShowQr?.addEventListener('click', () => {
+    if (!currentSession) return;
+    const url = getAudienceUrl(currentSession.code);
+    setText(qrCodeText, currentSession.code);
+
+    qrTarget.innerHTML = '';
+    if (window.QRCode) {
+      qrCodeInstance = new QRCode(qrTarget, {
+        text: url,
+        width: 220,
+        height: 220,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+    } else {
+      qrTarget.textContent = 'QR Code library loading...';
+    }
+
+    qrModal.classList.add('show');
+    qrModal.setAttribute('aria-hidden', 'false');
+  });
+
+  btnCloseQr?.addEventListener('click', () => {
+    qrModal.classList.remove('show');
+    qrModal.setAttribute('aria-hidden', 'true');
+  });
+
+  qrModal?.addEventListener('click', (e) => {
+    if (e.target === qrModal) {
+      qrModal.classList.remove('show');
+      qrModal.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Refresh stats for active presentation
+  async function refreshLiveStats() {
+    if (!currentSession?.current_presentation_id) {
+      setText(liveAvg, '—');
+      setText(liveCount, '0');
+      return;
+    }
+
+    const { data: stats } = await db.getStats(currentSession.current_presentation_id);
+    if (stats) {
+      setText(liveAvg, stats.count > 0 ? `${stats.average} ★` : '—');
+      setText(liveCount, stats.count);
+    }
+  }
+
+  // Start app
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+.DS_Store
+node_modules/
+.claude/
+
+# Environment files — may contain the service_role key or R2 secrets.
+# NEVER commit any .env file. Use .env.example as the template.
+.env
+.env.*
+!.env.example
+
+# Supabase CLI local config (contains DB password after `supabase login`)
+supabase/.env
+supabase/functions/**/.env
+
+# Local key overrides (if you run `cp config.example.js config.js` locally)
+# config.js is safe to commit because it only holds the anon (publishable) key,
+# but if you ever need to keep a local version with extra values, add it here.
+# config.local.js

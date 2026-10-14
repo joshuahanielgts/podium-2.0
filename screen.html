@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Podium — Big Screen</title>
+<meta name="description" content="Live big-screen projector view for presentation ratings and results." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20role%3D%22img%22%20aria-label%3D%22Podium%22%3E%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%23F5F1EA%22%2F%3E%20%3Crect%20x%3D%229%22%20y%3D%2228%22%20width%3D%2215.5%22%20height%3D%2227%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3Cpath%20d%3D%22M27.5%2018.8c0-1.2.8-2.2%202-2.5l10.5-2.2c1.6-.3%203.1.9%203.1%202.5V52c0%201.7-1.3%203-3%203h-9.6c-1.7%200-3-1.3-3-3V18.8Z%22%20fill%3D%22%23C9541F%22%2F%3E%20%3Crect%20x%3D%2245.5%22%20y%3D%2233%22%20width%3D%2214%22%20height%3D%2222%22%20rx%3D%223%22%20fill%3D%22%231B1A16%22%2F%3E%20%3C%2Fsvg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css?v=20261015" />
+<style>
+  :root {
+    --bg-screen: #0E0D0B;
+    --surface-screen: #1A1916;
+    --border-screen: rgba(255,255,255,0.08);
+    --text-screen: #F5F1EA;
+    --text-muted-screen: #8E8A82;
+    --gold: #F59E0B;
+    --gold-grad: linear-gradient(180deg, #FCD34D, #D97706);
+  }
+  body {
+    background: var(--bg-screen);
+    color: var(--text-screen);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    overflow-x: hidden;
+  }
+  .screen-header {
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-screen);
+    background: rgba(14, 13, 11, 0.85);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .screen-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-screen);
+    text-decoration: none;
+  }
+  .join-pill-box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--surface-screen);
+    border: 1px solid var(--border-screen);
+    padding: 8px 18px;
+    border-radius: 999px;
+  }
+  .screen-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 48px 80px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  /* LOBBY / WAITING VIEW */
+  .lobby-card {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--surface-screen);
+    border: 1px solid var(--border-screen);
+    border-radius: 32px;
+    padding: 56px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .lobby-qr {
+    display: inline-block;
+    background: #fff;
+    padding: 20px;
+    border-radius: 24px;
+    margin: 28px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .lobby-code-display {
+    font-family: monospace;
+    font-size: clamp(36px, 8vw, 64px);
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: var(--accent, #C9541F);
+    margin: 12px 0 24px;
+  }
+
+  /* LIVE PRESENTATION VIEW */
+  .live-screen-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .live-screen-grid { grid-template-columns: 1fr; gap: 32px; }
+  }
+  .team-display-box {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .team-big-name {
+    font-size: clamp(40px, 6.5vw, 76px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: #fff;
+    word-break: break-word;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .status-pill.open {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+  .status-pill.closed {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  .pulse-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4ade80;
+    animation: livePulse 1.4s infinite;
+  }
+  @keyframes livePulse {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    50% { transform: scale(1.4); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.6; }
+  }
+
+  /* STATS DISPLAY */
+  .stats-card {
+    background: var(--surface-screen);
+    border: 1px solid var(--border-screen);
+    border-radius: 28px;
+    padding: 36px 32px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+  .score-headline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-screen);
+  }
+  .big-score {
+    font-size: clamp(52px, 8vw, 84px);
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+  }
+  .big-score .star-icon {
+    color: var(--gold);
+    font-size: 0.85em;
+  }
+  .vote-count-label {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-muted-screen);
+  }
+
+  /* DISTRIBUTION BARS */
+  .bars-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 15px;
+  }
+  .bar-star-label {
+    width: 32px;
+    font-weight: 700;
+    color: var(--text-screen);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .bar-track {
+    flex: 1;
+    height: 22px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--gold-grad);
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bar-count-label {
+    width: 80px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-muted-screen);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* SCORES HIDDEN MASK */
+  .hidden-scores-box {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--border-screen);
+    border-radius: 20px;
+  }
+
+  /* LEADERBOARD & PODIUM */
+  .leaderboard-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .leaderboard-title {
+    text-align: center;
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .stand-team-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 8px 0 4px;
+    color: var(--text);
+  }
+  .stand-team-score {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* TABLE OF STANDINGS */
+  .standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 48px;
+    background: var(--surface-screen);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border-screen);
+  }
+  .standings-table th, .standings-table td {
+    padding: 18px 24px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-screen);
+  }
+  .standings-table th {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted-screen);
+    background: rgba(255,255,255,0.02);
+  }
+  .standings-table tr:last-child td { border-bottom: none; }
+  .rank-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    font-weight: 700;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<header class="screen-header">
+  <a class="screen-brand" href="index.html">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true" style="width:28px;height:28px">
+      <rect width="64" height="64" rx="16" fill="#F5F1EA"/>
+      <rect x="9" y="28" width="15.5" height="27" rx="3" fill="#1B1A16"/>
+      <path d="M27.5 18.8c0-1.2.8-2.2 2-2.5l10.5-2.2c1.6-.3 3.1.9 3.1 2.5V52c0 1.7-1.3 3-3 3h-9.6c-1.7 0-3-1.3-3-3V18.8Z" fill="#C9541F"/>
+      <rect x="45.5" y="33" width="14" height="22" rx="3" fill="#1B1A16"/>
+    </svg>
+    Podium
+  </a>
+
+  <div class="join-pill-box">
+    <div id="corner-qr" style="width:36px;height:36px;background:#fff;padding:2px;border-radius:4px"></div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted-screen);text-transform:uppercase;letter-spacing:0.08em">Scan or enter code</div>
+      <div style="font-family:monospace;font-size:16px;font-weight:800;letter-spacing:0.12em;color:var(--gold)" id="header-code">------</div>
+    </div>
+  </div>
+</header>
+
+<main class="screen-main">
+
+  <!-- VIEW 1: LOADING -->
+  <div id="view-loading" style="text-align:center;padding:100px 20px">
+    <h2 class="h2">Connecting to live screen...</h2>
+    <p class="micro" style="color:var(--text-muted-screen);margin-top:8px">Establishing real-time connection</p>
+  </div>
+
+  <!-- VIEW 2: LOBBY / WAITING (No presentation live yet) -->
+  <div id="view-lobby" class="lobby-card" style="display:none">
+    <span class="status-pill open" style="margin-bottom:16px">
+      <span class="pulse-indicator"></span> Session Ready
+    </span>
+    <h1 class="h1" id="lobby-session-title" style="margin:8px 0">Annual Pitch Competition</h1>
+    <p class="lede" id="lobby-college-name" style="color:var(--text-muted-screen);margin-bottom:20px">PSG College of Technology</p>
+
+    <div class="lobby-qr" id="lobby-qr-target"></div>
+
+    <div style="font-size:14px;color:var(--text-muted-screen);text-transform:uppercase;letter-spacing:0.12em">Or enter code on your phone</div>
+    <div class="lobby-code-display" id="lobby-code-display">------</div>
+
+    <p style="font-size:16px;color:var(--text-muted-screen)">
+      Scan the QR code to join from your phone. No sign-up required.
+    </p>
+  </div>
+
+  <!-- VIEW 3: LIVE PRESENTATION & REAL-TIME STATS -->
+  <div id="view-live" style="display:none">
+    <div class="live-screen-grid">
+      
+      <!-- LEFT: TEAM & DETAILS -->
+      <div class="team-display-box">
+        <span style="font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold)" id="live-pos-label">
+          PRESENTATION 1 OF 5
+        </span>
+        <h1 class="team-big-name" id="live-team-name">Team Name</h1>
+
+        <div>
+          <span class="status-pill open" id="live-status-pill">
+            <span class="pulse-indicator"></span> Rating is Open
+          </span>
+        </div>
+
+        <p style="font-size:15px;color:var(--text-muted-screen);margin-top:20px" id="live-event-subtitle">
+          Annual Pitch Competition
+        </p>
+      </div>
+
+      <!-- RIGHT: STATS / DISTRIBUTION -->
+      <div class="stats-card">
+        
+        <!-- SCORES VISIBLE -->
+        <div id="stats-visible">
+          <div class="score-headline">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--text-muted-screen);text-transform:uppercase;letter-spacing:0.1em">Average Rating</div>
+              <div class="big-score">
+                <span id="stat-avg">0.0</span> <span class="star-icon">&#9733;</span>
+              </div>
+            </div>
+            <div class="vote-count-label">
+              <span id="stat-count" style="font-size:32px;font-weight:800;color:#fff">0</span> votes
+            </div>
+          </div>
+
+          <!-- BARS 5 to 1 -->
+          <div class="bars-container">
+            <div class="bar-row">
+              <span class="bar-star-label">5 <span style="color:var(--gold)">&#9733;</span></span>
+              <div class="bar-track"><div class="bar-fill" id="bar-5"></div></div>
+              <span class="bar-count-label" id="lbl-5">0 (0%)</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-star-label">4 <span style="color:var(--gold)">&#9733;</span></span>
+              <div class="bar-track"><div class="bar-fill" id="bar-4"></div></div>
+              <span class="bar-count-label" id="lbl-4">0 (0%)</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-star-label">3 <span style="color:var(--gold)">&#9733;</span></span>
+              <div class="bar-track"><div class="bar-fill" id="bar-3"></div></div>
+              <span class="bar-count-label" id="lbl-3">0 (0%)</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-star-label">2 <span style="color:var(--gold)">&#9733;</span></span>
+              <div class="bar-track"><div class="bar-fill" id="bar-2"></div></div>
+              <span class="bar-count-label" id="lbl-2">0 (0%)</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-star-label">1 <span style="color:var(--gold)">&#9733;</span></span>
+              <div class="bar-track"><div class="bar-fill" id="bar-1"></div></div>
+              <span class="bar-count-label" id="lbl-1">0 (0%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCORES HIDDEN (when show_scores = false) -->
+        <div id="stats-hidden" class="hidden-scores-box" style="display:none">
+          <span style="font-size:36px;display:block;margin-bottom:12px">&#128065;</span>
+          <h3 class="h3" style="color:#fff;margin:0 0 6px">Voting in progress</h3>
+          <p class="micro" style="color:var(--text-muted-screen)">
+            Scores are hidden by the coordinator and will be revealed shortly.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIEW 4: FINAL LEADERBOARD & PODIUM -->
+  <div id="view-leaderboard" class="leaderboard-wrap" style="display:none">
+    <h1 class="leaderboard-title">Final Results</h1>
+    <p style="text-align:center;color:var(--text-muted-screen);margin-bottom:32px" id="leaderboard-sub">
+      Competition Results
+    </p>
+
+    <!-- PODIUM STAGE (TOP 3) -->
+    <div class="stage" id="podium-stage" style="display:none">
+      <!-- 2nd place (left) -->
+      <div class="stand second" id="stand-2">
+        <div class="stand-card">
+          <div class="metal-silver" style="font-size:11px;font-weight:700;padding:4px;border-radius:4px;margin-bottom:6px">2ND PLACE</div>
+          <div class="stand-team-title" id="team-silver">—</div>
+          <div class="stand-team-score" id="score-silver">—</div>
+        </div>
+        <div class="block block-silver"><span class="block-n">2</span></div>
+      </div>
+
+      <!-- 1st place (center, tallest) -->
+      <div class="stand first" id="stand-1">
+        <div class="stand-card">
+          <div class="metal-gold" style="font-size:12px;font-weight:700;padding:5px;border-radius:4px;margin-bottom:6px">&#127942; WINNER</div>
+          <div class="stand-team-title" id="team-gold" style="font-size:22px">—</div>
+          <div class="stand-team-score" id="score-gold" style="font-size:18px">—</div>
+        </div>
+        <div class="block block-gold"><span class="block-n">1</span></div>
+      </div>
+
+      <!-- 3rd place (right) -->
+      <div class="stand third" id="stand-3">
+        <div class="stand-card">
+          <div class="metal-bronze" style="font-size:11px;font-weight:700;padding:4px;border-radius:4px;margin-bottom:6px">3RD PLACE</div>
+          <div class="stand-team-title" id="team-bronze">—</div>
+          <div class="stand-team-score" id="score-bronze">—</div>
+        </div>
+        <div class="block block-bronze"><span class="block-n">3</span></div>
+      </div>
+    </div>
+
+    <!-- FULL STANDINGS TABLE -->
+    <table class="standings-table" id="standings-table">
+      <thead>
+        <tr>
+          <th style="width:70px">Rank</th>
+          <th>Team / Presentation</th>
+          <th style="text-align:right">Average</th>
+          <th style="text-align:right">Total Votes</th>
+        </tr>
+      </thead>
+      <tbody id="standings-tbody">
+        <!-- Filled dynamically -->
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js?v=20261015"></script>
+<script src="supabase-client.js?v=20261015"></script>
+<script>
+(function screenApp() {
+  const db = window.podiumDb;
+
+  // DOM Elements
+  const headerCode = document.getElementById('header-code');
+  const cornerQr = document.getElementById('corner-qr');
+
+  const viewLoading = document.getElementById('view-loading');
+  const viewLobby = document.getElementById('view-lobby');
+  const lobbySessionTitle = document.getElementById('lobby-session-title');
+  const lobbyCollegeName = document.getElementById('lobby-college-name');
+  const lobbyQrTarget = document.getElementById('lobby-qr-target');
+  const lobbyCodeDisplay = document.getElementById('lobby-code-display');
+
+  const viewLive = document.getElementById('view-live');
+  const livePosLabel = document.getElementById('live-pos-label');
+  const liveTeamName = document.getElementById('live-team-name');
+  const liveStatusPill = document.getElementById('live-status-pill');
+  const liveEventSubtitle = document.getElementById('live-event-subtitle');
+
+  const statsVisible = document.getElementById('stats-visible');
+  const statsHidden = document.getElementById('stats-hidden');
+  const statAvg = document.getElementById('stat-avg');
+  const statCount = document.getElementById('stat-count');
+
+  const bar5 = document.getElementById('bar-5');
+  const bar4 = document.getElementById('bar-4');
+  const bar3 = document.getElementById('bar-3');
+  const bar2 = document.getElementById('bar-2');
+  const bar1 = document.getElementById('bar-1');
+
+  const lbl5 = document.getElementById('lbl-5');
+  const lbl4 = document.getElementById('lbl-4');
+  const lbl3 = document.getElementById('lbl-3');
+  const lbl2 = document.getElementById('lbl-2');
+  const lbl1 = document.getElementById('lbl-1');
+
+  const viewLeaderboard = document.getElementById('view-leaderboard');
+  const leaderboardSub = document.getElementById('leaderboard-sub');
+  const podiumStage = document.getElementById('podium-stage');
+  const teamGold = document.getElementById('team-gold');
+  const scoreGold = document.getElementById('score-gold');
+  const teamSilver = document.getElementById('team-silver');
+  const scoreSilver = document.getElementById('score-silver');
+  const teamBronze = document.getElementById('team-bronze');
+  const scoreBronze = document.getElementById('score-bronze');
+  const standingsTbody = document.getElementById('standings-tbody');
+
+  let sessionCode = '';
+  let sessionData = null;
+  let currentPresentationId = null;
+  let qrRendered = false;
+  let pollInterval = null;
+
+  function showView(view) {
+    viewLoading.style.display = view === 'loading' ? 'block' : 'none';
+    viewLobby.style.display = view === 'lobby' ? 'block' : 'none';
+    viewLive.style.display = view === 'live' ? 'block' : 'none';
+    viewLeaderboard.style.display = view === 'leaderboard' ? 'block' : 'none';
+  }
+
+  function setText(el, text) {
+    if (el) el.textContent = text ?? '';
+  }
+
+  function getCode() {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('code') || '').toUpperCase().trim();
+  }
+
+  function getAudienceUrl(code) {
+    const loc = window.location;
+    const base = loc.origin + loc.pathname.replace(/screen\.html.*$/, 'rate.html');
+    return `${base}?code=${encodeURIComponent(code)}`;
+  }
+
+  function renderQRCodes(url) {
+    if (qrRendered) return;
+    qrRendered = true;
+
+    // Lobby big QR
+    lobbyQrTarget.innerHTML = '';
+    if (window.QRCode) {
+      new QRCode(lobbyQrTarget, {
+        text: url,
+        width: 280,
+        height: 280,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+
+      // Top corner mini QR
+      cornerQr.innerHTML = '';
+      new QRCode(cornerQr, {
+        text: url,
+        width: 36,
+        height: 36,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.L,
+      });
+    }
+  }
+
+  // Fetch session data & active presentation stats
+  async function syncScreen() {
+    if (!sessionCode) return;
+
+    const { data: sess, error } = await db.getSessionPublic(sessionCode);
+
+    if (error || !sess || !sess.found) {
+      setText(headerCode, sessionCode || '------');
+      return;
+    }
+
+    sessionData = sess;
+    setText(headerCode, sessionData.code);
+    setText(lobbyCodeDisplay, sessionData.code);
+    renderQRCodes(getAudienceUrl(sessionData.code));
+
+    // State 1: Finished Session -> Leaderboard
+    if (sessionData.status === 'finished') {
+      await renderLeaderboard();
+      showView('leaderboard');
+      return;
+    }
+
+    // State 2: No presentation live -> Lobby
+    if (!sessionData.current_presentation) {
+      setText(lobbySessionTitle, sessionData.title);
+      setText(lobbyCollegeName, sessionData.college || 'Venue Unlisted');
+      showView('lobby');
+      return;
+    }
+
+    // State 3: Live presentation
+    const pres = sessionData.current_presentation;
+    currentPresentationId = pres.id;
+
+    setText(livePosLabel, `PRESENTATION ${pres.position || 1}`);
+    setText(liveTeamName, pres.name);
+    setText(liveEventSubtitle, `${sessionData.title} ${sessionData.college ? '· ' + sessionData.college : ''}`);
+
+    if (sessionData.rating_open) {
+      liveStatusPill.className = 'status-pill open';
+      liveStatusPill.innerHTML = '<span class="pulse-indicator"></span> Rating is Open';
+    } else {
+      liveStatusPill.className = 'status-pill closed';
+      liveStatusPill.textContent = 'Rating Closed';
+    }
+
+    // Score visibility toggle
+    if (sessionData.show_scores) {
+      statsVisible.style.display = 'block';
+      statsHidden.style.display = 'none';
+      await updateLiveStats(pres.id);
+    } else {
+      statsVisible.style.display = 'none';
+      statsHidden.style.display = 'block';
+    }
+
+    showView('live');
+  }
+
+  // Update live statistics and animated bars
+  async function updateLiveStats(presId) {
+    if (!presId) return;
+
+    const { data: stats } = await db.getStats(presId);
+    if (!stats) return;
+
+    setText(statAvg, stats.count > 0 ? stats.average.toFixed(1) : '0.0');
+    setText(statCount, stats.count);
+
+    const total = stats.count || 0;
+    const calc = (count) => {
+      if (total === 0) return { pct: 0, text: '0 (0%)' };
+      const pct = Math.round((count / total) * 100);
+      return { pct, text: `${count} (${pct}%)` };
+    };
+
+    const s5 = calc(stats.stars_5 || 0);
+    const s4 = calc(stats.stars_4 || 0);
+    const s3 = calc(stats.stars_3 || 0);
+    const s2 = calc(stats.stars_2 || 0);
+    const s1 = calc(stats.stars_1 || 0);
+
+    bar5.style.width = `${s5.pct}%`;
+    setText(lbl5, s5.text);
+
+    bar4.style.width = `${s4.pct}%`;
+    setText(lbl4, s4.text);
+
+    bar3.style.width = `${s3.pct}%`;
+    setText(lbl3, s3.text);
+
+    bar2.style.width = `${s2.pct}%`;
+    setText(lbl2, s2.text);
+
+    bar1.style.width = `${s1.pct}%`;
+    setText(lbl1, s1.text);
+  }
+
+  // Render leaderboard & podium
+  async function renderLeaderboard() {
+    setText(leaderboardSub, `${sessionData.title} ${sessionData.college ? '· ' + sessionData.college : ''}`);
+    const { data: rows } = await db.getLeaderboard(sessionData.code);
+
+    if (!rows || rows.length === 0) {
+      podiumStage.style.display = 'none';
+      standingsTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted-screen)">No presentations rated yet.</td></tr>`;
+      return;
+    }
+
+    // Top 3 Podium
+    podiumStage.style.display = 'grid';
+    const first = rows.find((r) => r.place === 1);
+    const second = rows.find((r) => r.place === 2) || rows.filter((r) => r.place === 1)[1]; // handle tie for 1st
+    const third = rows.find((r) => r.place === 3) || rows.filter((r) => r.place === 2)[1] || rows[2];
+
+    if (first) {
+      setText(teamGold, first.name);
+      setText(scoreGold, `${first.average.toFixed(1)} ★ (${first.votes} votes)`);
+    }
+    if (second) {
+      setText(teamSilver, second.name);
+      setText(scoreSilver, `${second.average.toFixed(1)} ★ (${second.votes} votes)`);
+    } else {
+      document.getElementById('stand-2').style.visibility = 'hidden';
+    }
+    if (third) {
+      setText(teamBronze, third.name);
+      setText(scoreBronze, `${third.average.toFixed(1)} ★ (${third.votes} votes)`);
+    } else {
+      document.getElementById('stand-3').style.visibility = 'hidden';
+    }
+
+    // Full standings table
+    standingsTbody.innerHTML = '';
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      const tdRank = document.createElement('td');
+      const rankPill = document.createElement('span');
+      rankPill.className = 'rank-pill';
+      rankPill.textContent = r.place;
+      tdRank.appendChild(rankPill);
+
+      const tdName = document.createElement('td');
+      tdName.style.cssText = 'font-weight:700;font-size:17px;color:#fff';
+      tdName.textContent = r.name; // XSS-safe
+
+      const tdAvg = document.createElement('td');
+      tdAvg.style.cssText = 'text-align:right;font-weight:700;font-size:18px;color:var(--gold)';
+      tdAvg.textContent = `${r.average.toFixed(1)} ★`;
+
+      const tdVotes = document.createElement('td');
+      tdVotes.style.cssText = 'text-align:right;color:var(--text-muted-screen);font-variant-numeric:tabular-nums';
+      tdVotes.textContent = `${r.votes} votes`;
+
+      tr.append(tdRank, tdName, tdAvg, tdVotes);
+      standingsTbody.appendChild(tr);
+    });
+  }
+
+  // Setup Realtime with automatic 2-second polling fallback
+  function setupRealtime() {
+    if (!sessionData?.id) return;
+
+    db.subscribeToSession(
+      sessionData.id,
+      () => {
+        // Session updated (e.g. host changed presentation, opened/closed rating, or finished session)
+        syncScreen();
+      },
+      () => {
+        // New rating inserted or updated -> refresh stats immediately!
+        if (currentPresentationId) {
+          updateLiveStats(currentPresentationId);
+        }
+      }
+    );
+  }
+
+  async function init() {
+    showView('loading');
+    sessionCode = getCode();
+
+    if (!sessionCode) {
+      document.body.innerHTML = `
+        <div style="padding:60px;text-align:center">
+          <h2>No session code provided</h2>
+          <p>Open this screen with <code>screen.html?code=XXXXXX</code></p>
+          <a href="index.html" class="btn btn-primary" style="margin-top:16px">Back to home</a>
+        </div>
+      `;
+      return;
+    }
+
+    setText(headerCode, sessionCode);
+
+    // Initial load
+    await syncScreen();
+    setupRealtime();
+
+    // 2-second fallback polling interval to guarantee the projector never freezes
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(syncScreen, 2000);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
